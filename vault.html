@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>RepUp — Vault</title>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#00E5FF"/>
+  <link rel="icon" type="image/svg+xml" href="icon.svg"/>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── PR CARDS ── */
+    .pr-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:9px;display:flex;align-items:center;gap:12px;transition:border-color .18s}
+    .pr-card.new-pr{border-color:.rgba(0,229,255,.45);background:.rgba(0,229,255,.05)}
+    .pr-icon{font-size:1.5rem;flex-shrink:0;width:32px;text-align:center}
+    .pr-body{flex:1;min-width:0}
+    .pr-name{font-size:.93rem;font-weight:800;letter-spacing:-.1px}
+    .pr-vals{display:flex;gap:10px;flex-wrap:wrap;margin-top:3px}
+    .pr-val{font-size:.72rem;color:var(--muted)}
+    .pr-val b{color:var(--gold);font-weight:700}
+    .pr-val.accent b{color:var(--accent)}
+    .pr-date{font-size:.68rem;color:var(--muted);margin-top:2px}
+    .new-badge{font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:.4px;background:var(--grad);color:#fff;padding:2px 8px;border-radius:99px;flex-shrink:0;box-shadow:0 2px 8px .rgba(0,229,255,.35)}
+
+    /* ── TEMPLATES ── */
+    .tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:border-color .18s}
+    .tcard:hover{border-color:var(--border2)}
+    .tcard-head{display:flex;align-items:center;gap:11px;padding:13px 15px}
+    .tcard-icon{font-size:1.5rem;flex-shrink:0}
+    .tcard-info{flex:1;min-width:0}
+    .tcard-name{font-size:.97rem;font-weight:800;letter-spacing:-.1px}
+    .tcard-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+    .tcard-acts{display:flex;gap:6px;flex-shrink:0}
+    .tcard-exlist{padding:0 15px 12px;border-top:1px solid var(--border)}
+    .tex-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.035);font-size:.8rem}
+    .tex-row:last-child{border:none}
+    .tex-name{flex:1;font-weight:600}
+    .tex-meta{color:var(--muted);font-size:.74rem;white-space:nowrap}
+
+    /* Save-as-template form */
+    .save-form{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+
+    /* ── LIBRARY ── */
+    .filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+    .filter-row::-webkit-scrollbar{display:none}
+    .fbtn{flex-shrink:0;padding:6px 13px;border-radius:99px;font-size:.76rem;font-weight:700;border:1.5px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .18s;font-family:inherit;touch-action:manipulation;-webkit-user-select:none;user-select:none;white-space:nowrap}
+    .fbtn.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:var(--sh-accent)}
+    .fbtn:hover:not(.on){border-color:.rgba(0,229,255,.4);color:var(--accent)}
+
+    .lib-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:9px;overflow:hidden;transition:border-color .18s}
+    .lib-card:hover{border-color:var(--border2)}
+    .lib-head{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer}
+    .lib-icon{font-size:1.5rem;flex-shrink:0;width:30px;text-align:center}
+    .lib-info{flex:1;min-width:0}
+    .lib-name{font-size:.93rem;font-weight:800;letter-spacing:-.1px}
+    .lib-group{font-size:.68rem;color:var(--muted);margin-top:1px;text-transform:capitalize}
+    .lib-chips{display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;max-width:130px}
+    .lib-body{display:none;padding:0 14px 13px;border-top:1px solid var(--border);background:rgba(0,0,0,.1)}
+    .lib-body.open{display:block}
+    .lib-desc{font-size:.8rem;color:var(--text2);line-height:1.65;margin-top:10px;margin-bottom:8px}
+    .lib-tip{font-size:.76rem;color:var(--gold);font-style:italic;padding:6px 10px;background:rgba(245,255,0,.07);border-radius:8px;border-left:2px solid rgba(245,255,0,.4);margin-bottom:8px}
+    .lib-muscles{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+    .search-wrap{position:relative;margin-bottom:12px}
+    .search-wrap input{padding-left:34px}
+    .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;pointer-events:none;opacity:.4}
+
+    /* ── NO DATA ── */
+    .no-data{text-align:center;padding:34px 20px;color:var(--muted);font-size:.84rem;line-height:1.65}
+    .no-data-i{font-size:2.4rem;display:block;margin-bottom:8px;opacity:.28}
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div style="display:flex;align-items:center;gap:11px">
+      <a href="./repup.html" class="dbk" style="text-decoration:none;display:flex;align-items:center;justify-content:center">←</a>
+      <div class="logo" style="font-size:1.3rem">Vault</div>
+    </div>
+    <div id="profile-chip" style="font-size:.75rem;font-weight:700;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:99px;padding:4px 10px"></div>
+  </header>
+
+  <main id="mscroll">
+    <div class="subtabs" style="margin-top:4px">
+      <button class="stab on" data-panel="p-prs">🏆 Records</button>
+      <button class="stab" data-panel="p-templates">📋 Templates</button>
+      <button class="stab" data-panel="p-library">📚 Library</button>
+    </div>
+
+    <!-- ══ PERSONAL RECORDS ══ -->
+    <div id="p-prs">
+      <div class="stat-grid" id="pr-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px"></div>
+      <div id="new-prs-section" class="hidden">
+        <div class="sec-row" style="margin-top:0"><span class="sec">🔥 Recent PRs — Last 7 Days</span></div>
+        <div id="new-prs-list"></div>
+      </div>
+      <div class="sec-row"><span class="sec">All-Time Records</span></div>
+      <div id="all-prs-list"></div>
+      <div id="prs-empty" class="no-data hidden">
+        <span class="no-data-i">🏆</span>
+        Log workouts and mark exercises done — RepUp will automatically detect your personal records here.
+      </div>
+    </div>
+
+    <!-- ══ TEMPLATES ══ -->
+    <div id="p-templates" class="hidden">
+      <div class="save-form">
+        <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px">Save a Workout as Template</div>
+        <div style="display:flex;gap:8px">
+          <select id="wkt-select" style="flex:1"><option value="">— Pick a workout —</option></select>
+          <button class="btn btn-o btn-sm" id="btn-save-tpl" style="flex-shrink:0">Save</button>
+        </div>
+      </div>
+      <div class="sec-row" style="margin-top:0"><span class="sec">Your Templates</span></div>
+      <div id="user-tpl-list"></div>
+      <div class="sec-row"><span class="sec">Built-In Starters</span></div>
+      <div id="builtin-tpl-list"></div>
+    </div>
+
+    <!-- ══ EXERCISE LIBRARY ══ -->
+    <div id="p-library" class="hidden">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="lib-search" placeholder="Search exercises…"/>
+      </div>
+      <div class="filter-row" id="filter-row">
+        <button class="fbtn on" data-grp="all">All</button>
+        <button class="fbtn" data-grp="chest">Chest</button>
+        <button class="fbtn" data-grp="back">Back</button>
+        <button class="fbtn" data-grp="shoulders">Shoulders</button>
+        <button class="fbtn" data-grp="arms">Arms</button>
+        <button class="fbtn" data-grp="legs">Legs</button>
+        <button class="fbtn" data-grp="core">Core</button>
+      </div>
+      <div id="lib-list"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+// ─── STATE ───────────────────────────────────────────────────
+var AK = 'ru3-active';
+var profile = localStorage.getItem(AK) || 'Me';
+var sk = function(n){ return 'ru3-' + n.toLowerCase().replace(/\s+/g,'-'); };
+function loadState(name){
+  var raw = localStorage.getItem(sk(name));
+  var s = raw ? JSON.parse(raw) : { workouts:[], log:[], sched:{}, library:{} };
+  if(!s.workouts) s.workouts=[];
+  if(!s.log) s.log=[];
+  return s;
+}
+function saveState(){ localStorage.setItem(sk(profile), JSON.stringify(S)); }
+var S = loadState(profile);
+
+var tplKey = sk(profile) + '-templates';
+function getTpls(){ return JSON.parse(localStorage.getItem(tplKey)||'[]'); }
+function saveTpls(d){ localStorage.setItem(tplKey, JSON.stringify(d)); }
+
+// ─── UTILS ───────────────────────────────────────────────────
+var ge  = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+var uid = function(){ return Math.random().toString(36).slice(2,10); };
+function parseWeight(s){ var n=parseFloat(String(s||'').replace(/[^0-9.]/g,'')); return isNaN(n)?0:n; }
+function est1RM(w,r){ w=parseFloat(w);r=parseInt(r); if(!w||!r||r<1||r>20) return 0; return r===1?Math.round(w):Math.round(w*(1+r/30)); }
+function daysAgo(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/86400000); }
+function fmtDate(iso){ return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+var DAYS7 = 7;
+var TCLS = {push:'bp',pull:'bl',legs:'bleg',full:'bf',cardio:'bc',other:'bo'};
+var TNAME = {push:'Push',pull:'Pull',legs:'Legs',full:'Full Body',cardio:'Cardio',other:'Other'};
+
+// ─── TABS ────────────────────────────────────────────────────
+document.querySelectorAll('.stab').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.stab').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    ['p-prs','p-templates','p-library'].forEach(function(p){
+      ge(p).classList.toggle('hidden', p!==btn.dataset.panel);
+    });
+    ge('mscroll').scrollTop=0;
+  });
+});
+
+// ─── BUILT-IN TEMPLATES ──────────────────────────────────────
+var BUILTIN = [
+  { id:'bi-push', name:'Push Day', tag:'push', icon:'💪',
+    exercises:[
+      {name:'Bench Press',sets:'4',reps:'8',weight:'135',notes:''},
+      {name:'Incline Dumbbell Press',sets:'3',reps:'10',weight:'60',notes:''},
+      {name:'Overhead Press',sets:'3',reps:'10',weight:'95',notes:''},
+      {name:'Lateral Raises',sets:'3',reps:'15',weight:'20',notes:''},
+      {name:'Tricep Pushdown',sets:'3',reps:'12',weight:'50',notes:''}
+    ]},
+  { id:'bi-pull', name:'Pull Day', tag:'pull', icon:'🔙',
+    exercises:[
+      {name:'Deadlift',sets:'4',reps:'5',weight:'225',notes:''},
+      {name:'Pull Ups',sets:'4',reps:'8',weight:'bodyweight',notes:''},
+      {name:'Barbell Row',sets:'3',reps:'10',weight:'135',notes:''},
+      {name:'Lat Pulldown',sets:'3',reps:'12',weight:'120',notes:''},
+      {name:'Barbell Curl',sets:'3',reps:'12',weight:'65',notes:''}
+    ]},
+  { id:'bi-legs', name:'Leg Day', tag:'legs', icon:'🦵',
+    exercises:[
+      {name:'Squat',sets:'4',reps:'8',weight:'185',notes:''},
+      {name:'Romanian Deadlift',sets:'3',reps:'10',weight:'135',notes:''},
+      {name:'Leg Press',sets:'3',reps:'12',weight:'270',notes:''},
+      {name:'Lunges',sets:'3',reps:'12',weight:'40',notes:''},
+      {name:'Calf Raises',sets:'4',reps:'20',weight:'bodyweight',notes:''}
+    ]},
+  { id:'bi-full', name:'Full Body', tag:'full', icon:'🏋️',
+    exercises:[
+      {name:'Squat',sets:'3',reps:'8',weight:'135',notes:''},
+      {name:'Bench Press',sets:'3',reps:'8',weight:'115',notes:''},
+      {name:'Deadlift',sets:'3',reps:'5',weight:'185',notes:''},
+      {name:'Pull Ups',sets:'3',reps:'8',weight:'bodyweight',notes:''},
+      {name:'Overhead Press',sets:'3',reps:'10',weight:'75',notes:''}
+    ]},
+  { id:'bi-upper', name:'Upper Body', tag:'push', icon:'💪',
+    exercises:[
+      {name:'Bench Press',sets:'4',reps:'8',weight:'135',notes:''},
+      {name:'Barbell Row',sets:'4',reps:'8',weight:'115',notes:''},
+      {name:'Overhead Press',sets:'3',reps:'10',weight:'85',notes:''},
+      {name:'Pull Ups',sets:'3',reps:'8',weight:'bodyweight',notes:''},
+      {name:'Dips',sets:'3',reps:'12',weight:'bodyweight',notes:''}
+    ]},
+  { id:'bi-core', name:'Core & Cardio', tag:'cardio', icon:'🔥',
+    exercises:[
+      {name:'Plank',sets:'3',reps:'60s',weight:'bodyweight',notes:'Hold 60 sec'},
+      {name:'Crunches',sets:'3',reps:'20',weight:'bodyweight',notes:''},
+      {name:'Russian Twists',sets:'3',reps:'20',weight:'25',notes:''},
+      {name:'Hanging Leg Raises',sets:'3',reps:'12',weight:'bodyweight',notes:''},
+      {name:'Mountain Climbers',sets:'3',reps:'30',weight:'bodyweight',notes:''}
+    ]}
+];
+
+// ─── EXERCISE LIBRARY DATA ────────────────────────────────────
+var EXLIB = [
+  // CHEST
+  { name:'Bench Press', icon:'🏋️', group:'chest',
+    muscles:{primary:['chest','triceps'],secondary:['shoulders']},
+    desc:'Lie flat on a bench, grip the bar slightly wider than shoulder-width. Lower it to mid-chest with control, then drive up explosively.',
+    tip:'Keep your shoulder blades pinched back and feet flat on the floor throughout the lift.' },
+  { name:'Incline Bench Press', icon:'📐', group:'chest',
+    muscles:{primary:['chest','triceps'],secondary:['shoulders']},
+    desc:'Set the bench to 30-45°. Press from upper chest with elbows at roughly 75° to your torso to protect the shoulder joint.',
+    tip:'The steeper the incline, the more front deltoid involvement — keep it under 45° for chest focus.' },
+  { name:'Dumbbell Flyes', icon:'🦅', group:'chest',
+    muscles:{primary:['chest'],secondary:['shoulders']},
+    desc:'Lie flat, hold dumbbells above chest with a slight elbow bend. Open arms wide in an arc, feeling a deep chest stretch, then squeeze back up.',
+    tip:'Never lock your elbows — maintain a soft bend throughout to protect the joint.' },
+  { name:'Push Ups', icon:'💪', group:'chest',
+    muscles:{primary:['chest','triceps'],secondary:['shoulders','abs']},
+    desc:'Hands slightly wider than shoulders, body rigid. Lower chest to the floor, then press back up while keeping core braced.',
+    tip:'A narrower hand position shifts more load onto the triceps.' },
+  { name:'Cable Crossover', icon:'🔗', group:'chest',
+    muscles:{primary:['chest'],secondary:['triceps']},
+    desc:'Set cables high. Step forward, pull handles down and across your body in a hugging motion, squeezing the chest at the peak contraction.',
+    tip:'Focus on the squeeze at the center — slow the movement down for maximum stretch.' },
+
+  // BACK
+  { name:'Deadlift', icon:'⚡', group:'back',
+    muscles:{primary:['lower_back','glutes','hamstrings'],secondary:['traps','lats','forearms']},
+    desc:'Stand with feet hip-width, bar over mid-foot. Hinge at the hips, grip the bar, brace your core, then drive your hips forward to stand tall.',
+    tip:'Think "push the floor away" rather than "pull the bar up" — it keeps your back safer.' },
+  { name:'Pull Ups', icon:'🎯', group:'back',
+    muscles:{primary:['lats','biceps'],secondary:['traps','forearms']},
+    desc:'Hang from a bar with an overhand grip slightly wider than shoulders. Drive your elbows down toward your hips to pull your chin over the bar.',
+    tip:'Initiate the movement with your lats, not your biceps — imagine bending the bar toward you.' },
+  { name:'Barbell Row', icon:'🔄', group:'back',
+    muscles:{primary:['lats','traps'],secondary:['biceps','lower_back']},
+    desc:'Hinge to roughly 45°, pull the bar into your lower chest/upper abdomen with a controlled row, keeping elbows close to your body.',
+    tip:'Lead with your elbows, not your hands, to maximize back engagement.' },
+  { name:'Lat Pulldown', icon:'⬇️', group:'back',
+    muscles:{primary:['lats'],secondary:['biceps','traps']},
+    desc:'Grip the bar wider than shoulders. Lean back slightly, pull the bar to your upper chest while driving your elbows down and back.',
+    tip:'Arch your chest up to meet the bar — this keeps your lats fully engaged at the bottom.' },
+  { name:'Seated Cable Row', icon:'🚣', group:'back',
+    muscles:{primary:['lats','traps'],secondary:['biceps','lower_back']},
+    desc:'Sit upright, pull the handle to your lower abdomen, squeezing your shoulder blades together at the peak. Return with a controlled stretch.',
+    tip:'Avoid rocking your torso — the work should come entirely from your arms and back.' },
+
+  // SHOULDERS
+  { name:'Overhead Press', icon:'🙌', group:'shoulders',
+    muscles:{primary:['shoulders','triceps'],secondary:['traps','chest']},
+    desc:'Stand or sit, grip just outside shoulder-width. Press the bar overhead until arms are locked out, keeping your core tight throughout.',
+    tip:'Tuck your chin back as the bar passes your face, then push your head through the window at the top.' },
+  { name:'Lateral Raises', icon:'↔️', group:'shoulders',
+    muscles:{primary:['shoulders'],secondary:['traps']},
+    desc:'Hold dumbbells at your sides, raise them to just above shoulder height with a slight forward angle, pinky leading slightly higher than thumb.',
+    tip:'Keep a slight bend in the elbows and lead with your elbows rather than your wrists.' },
+  { name:'Face Pulls', icon:'😤', group:'shoulders',
+    muscles:{primary:['traps','shoulders'],secondary:['biceps']},
+    desc:'Set a cable at head height. Pull the rope toward your face, separating the ends, with elbows flaring out wide at the top.',
+    tip:'An extremely underrated movement for shoulder health — do this consistently.' },
+  { name:'Arnold Press', icon:'🏅', group:'shoulders',
+    muscles:{primary:['shoulders','triceps'],secondary:['traps']},
+    desc:'Start with dumbbells at chin height, palms facing you. Rotate palms forward as you press overhead — reverse the rotation on the way down.',
+    tip:'The rotation hits all three deltoid heads in one movement.' },
+
+  // ARMS
+  { name:'Barbell Curl', icon:'💪', group:'arms',
+    muscles:{primary:['biceps'],secondary:['forearms']},
+    desc:'Stand with an underhand grip. Curl the bar from full extension to your upper chest, squeezing the biceps hard at the top.',
+    tip:'Keep your elbows pinned at your sides — if they move forward you are using momentum.' },
+  { name:'Hammer Curl', icon:'🔨', group:'arms',
+    muscles:{primary:['biceps','forearms'],secondary:[]},
+    desc:'Hold dumbbells with a neutral grip (palms facing each other). Curl both up simultaneously or alternating, keeping the thumbs on top.',
+    tip:'Hammer curls target the brachialis and build arm thickness that regular curls miss.' },
+  { name:'Tricep Dips', icon:'⬇️', group:'arms',
+    muscles:{primary:['triceps'],secondary:['chest','shoulders']},
+    desc:'Grip parallel bars, lower until your upper arms are parallel to the floor, then press back up to full elbow extension.',
+    tip:'Lean forward slightly to shift focus toward your chest — stay upright to isolate the triceps.' },
+  { name:'Tricep Pushdown', icon:'⬇️', group:'arms',
+    muscles:{primary:['triceps'],secondary:['forearms']},
+    desc:'Use a cable with a rope or bar attachment at head height. Keep elbows pinned at your sides and extend fully at the bottom, squeezing hard.',
+    tip:'Full extension at the bottom is critical — half reps significantly reduce the tricep stimulus.' },
+  { name:'Close Grip Bench', icon:'🤏', group:'arms',
+    muscles:{primary:['triceps','chest'],secondary:['shoulders']},
+    desc:'Set your grip at shoulder-width on the barbell. Lower to your lower chest keeping elbows close to your body, then press to full lockout.',
+    tip:'Shoulder-width grip protects the wrists — going narrower is unnecessary and can cause injury.' },
+
+  // LEGS
+  { name:'Squat', icon:'🦵', group:'legs',
+    muscles:{primary:['quads','glutes'],secondary:['hamstrings','lower_back']},
+    desc:'Bar across your upper back, feet shoulder-width. Push your knees out as you descend below parallel, then drive up through your heels.',
+    tip:'Knees should track over your toes — push them outward throughout the entire movement.' },
+  { name:'Romanian Deadlift', icon:'🔽', group:'legs',
+    muscles:{primary:['hamstrings','glutes'],secondary:['lower_back']},
+    desc:'Hold the bar at hip level. Hinge forward at the hips with a soft knee bend, lowering the bar along your legs until you feel a deep hamstring stretch.',
+    tip:'Feel the stretch before reversing — stopping too early leaves gains on the table.' },
+  { name:'Leg Press', icon:'🦵', group:'legs',
+    muscles:{primary:['quads','glutes'],secondary:['hamstrings']},
+    desc:'Feet shoulder-width on the platform. Lower the sled until your knees reach 90°, then drive through your heels back to near-full extension.',
+    tip:'Never lock your knees out at the top — keep a slight bend to protect the joint.' },
+  { name:'Lunges', icon:'🚶', group:'legs',
+    muscles:{primary:['quads','glutes'],secondary:['hamstrings','calves']},
+    desc:'Step forward and lower your back knee toward the floor, keeping your front shin vertical. Drive through your front heel to return to standing.',
+    tip:'A longer step targets the glutes more — a shorter step puts more load on the quads.' },
+  { name:'Calf Raises', icon:'🦶', group:'legs',
+    muscles:{primary:['calves'],secondary:[]},
+    desc:'Stand with the balls of your feet on an elevated surface. Drop your heels as low as possible, then drive up as high as you can go.',
+    tip:'Full range of motion matters here more than any other exercise — calves respond to stretch.' },
+  { name:'Hip Thrust', icon:'⬆️', group:'legs',
+    muscles:{primary:['glutes'],secondary:['hamstrings']},
+    desc:'Upper back against a bench, bar across your hips. Drive your hips to full extension, squeezing your glutes hard at the top for 1-2 seconds.',
+    tip:'The glute squeeze at the top is what makes this movement elite — do not skip it.' },
+
+  // CORE
+  { name:'Plank', icon:'🧱', group:'core',
+    muscles:{primary:['abs'],secondary:['shoulders','lower_back']},
+    desc:'Forearms and toes on the floor. Keep your body rigid from head to heels — no sagging hips or raised backside. Breathe steadily.',
+    tip:'Squeeze your glutes and quads as hard as your abs — this makes the plank dramatically harder.' },
+  { name:'Crunches', icon:'🔁', group:'core',
+    muscles:{primary:['abs'],secondary:['obliques']},
+    desc:'Lie flat, hands behind your head. Curl your upper spine off the floor by contracting your abs — do not pull on your neck.',
+    tip:'The range of motion is short — your lower back should stay on the floor the whole time.' },
+  { name:'Russian Twists', icon:'🌀', group:'core',
+    muscles:{primary:['obliques'],secondary:['abs']},
+    desc:'Sit with feet raised, lean back 45°. Rotate your torso from side to side, touching the floor beside you each rep.',
+    tip:'Adding a weight plate forces the obliques to work significantly harder.' },
+  { name:'Hanging Leg Raises', icon:'🎯', group:'core',
+    muscles:{primary:['abs'],secondary:['forearms','hip flexors']},
+    desc:'Hang from a pull-up bar. Keeping your legs straight, raise them to horizontal or above while preventing your body from swinging.',
+    tip:'Tilt your pelvis backward at the top — this extra crunch turns it into a true ab exercise.' },
+  { name:'Ab Wheel Rollout', icon:'⚙️', group:'core',
+    muscles:{primary:['abs'],secondary:['lats','shoulders']},
+    desc:'Kneel on the floor, roll the wheel out until your body is nearly horizontal, then pull back in by contracting your abs and lats together.',
+    tip:'One of the hardest ab exercises — master the kneeling version before attempting standing.' }
+];
+
+// ─── PERSONAL RECORDS ────────────────────────────────────────
+function renderPRs(){
+  var log = S.log;
+  if(!log.length){ ge('prs-empty').classList.remove('hidden'); return; }
+
+  // Build PRs map: { exName: { weight, orm, reps, date } }
+  var prs={};
+  log.forEach(function(entry){
+    entry.exercises.forEach(function(e){
+      if(!e.done) return;
+      var w=parseWeight(e.weight), r=parseInt(e.reps)||0;
+      var orm=est1RM(w,r);
+      var cur=prs[e.name];
+      if(!cur||orm>cur.orm||(orm===cur.orm&&w>cur.weight)){
+        prs[e.name]={weight:w,orm:orm,reps:r,date:entry.date,raw:e.weight};
+      }
+    });
+  });
+
+  var keys=Object.keys(prs).sort(function(a,b){return prs[b].orm-prs[a].orm;});
+  if(!keys.length){ ge('prs-empty').classList.remove('hidden'); return; }
+
+  // Stats
+  var newCount=keys.filter(function(k){return daysAgo(prs[k].date)<=DAYS7;}).length;
+  var totalPRs=keys.length;
+  var topOrm=prs[keys[0]].orm;
+  ge('pr-stats').innerHTML=
+    prStat(totalPRs,'Exercises Tracked')+
+    prStat(newCount,'New This Week')+
+    prStat(topOrm>0?topOrm+'lbs':'—','Best Est. 1RM');
+
+  // New PRs section
+  var newKeys=keys.filter(function(k){return daysAgo(prs[k].date)<=DAYS7;});
+  if(newKeys.length){
+    ge('new-prs-section').classList.remove('hidden');
+    ge('new-prs-list').innerHTML=newKeys.map(function(k){return prCardHTML(k,prs[k],true);}).join('');
+  }
+
+  // All PRs
+  ge('all-prs-list').innerHTML=keys.map(function(k){return prCardHTML(k,prs[k],false);}).join('');
+}
+function prStat(v,l){ return '<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;text-align:center"><div style="font-size:1.3rem;font-weight:900;color:var(--accent);letter-spacing:-.3px;line-height:1">'+esc(String(v))+'</div><div style="font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:4px">'+esc(l)+'</div></div>'; }
+function prCardHTML(name, pr, isNew){
+  var libEntry=EXLIB.find(function(e){return e.name.toLowerCase()===name.toLowerCase();});
+  var icon=libEntry?libEntry.icon:'🏋️';
+  return '<div class="pr-card'+(isNew?' new-pr':'')+'">'+
+    '<div class="pr-icon">'+icon+'</div>'+
+    '<div class="pr-body">'+
+      '<div class="pr-name">'+esc(name)+'</div>'+
+      '<div class="pr-vals">'+
+        '<span class="pr-val accent"><b>~'+pr.orm+'</b> lbs est. 1RM</span>'+
+        (pr.weight?'<span class="pr-val"><b>'+esc(pr.raw)+'</b> × '+pr.reps+' reps</span>':'')+
+      '</div>'+
+      '<div class="pr-date">'+fmtDate(pr.date)+'</div>'+
+    '</div>'+
+    (isNew?'<span class="new-badge">🔥 New!</span>':'')+
+  '</div>';
+}
+
+// ─── TEMPLATES ───────────────────────────────────────────────
+function populateWktSelect(){
+  var sel=ge('wkt-select');
+  S.workouts.forEach(function(w){
+    var o=document.createElement('option'); o.value=w.id; o.textContent=w.name; sel.appendChild(o);
+  });
+}
+
+ge('btn-save-tpl').addEventListener('click',function(){
+  var wid=ge('wkt-select').value; if(!wid) return;
+  var w=S.workouts.find(function(x){return x.id===wid;}); if(!w) return;
+  var tpls=getTpls();
+  if(tpls.find(function(t){return t.sourceId===wid;})){alert('A template for "'+w.name+'" already exists.'); return;}
+  tpls.unshift({
+    id:uid(), sourceId:wid, name:w.name, tag:w.tag, icon:'💾',
+    exercises:w.exercises.map(function(e){return{name:e.name,sets:e.sets,reps:e.reps,weight:e.weight,notes:e.notes||''};})
+  });
+  saveTpls(tpls);
+  renderTemplates();
+  alert('"'+w.name+'" saved as a template!');
+});
+
+function renderTemplates(){
+  renderUserTpls();
+  renderBuiltinTpls();
+}
+
+function renderUserTpls(){
+  var tpls=getTpls(), list=ge('user-tpl-list');
+  if(!tpls.length){
+    list.innerHTML='<div class="no-data"><span class="no-data-i" style="font-size:1.8rem;opacity:.25">📋</span>Save one of your workouts above to create a custom template.</div>';
+    return;
+  }
+  list.innerHTML=tpls.map(function(t){ return tplCardHTML(t,true); }).join('');
+  bindTplActions(list,true);
+}
+
+function renderBuiltinTpls(){
+  var list=ge('builtin-tpl-list');
+  list.innerHTML=BUILTIN.map(function(t){ return tplCardHTML(t,false); }).join('');
+  bindTplActions(list,false);
+}
+
+function tplCardHTML(t, canDelete){
+  return '<div class="tcard" id="tc-'+esc(t.id)+'">'+
+    '<div class="tcard-head">'+
+      '<div class="tcard-icon">'+t.icon+'</div>'+
+      '<div class="tcard-info">'+
+        '<div class="tcard-name">'+esc(t.name)+'</div>'+
+        '<div class="tcard-meta"><span class="badge '+(TCLS[t.tag]||'bo')+'" style="margin-right:5px">'+(TNAME[t.tag]||t.tag)+'</span>'+t.exercises.length+' exercises</div>'+
+      '</div>'+
+      '<div class="tcard-acts">'+
+        '<button class="btn btn-o btn-sm" data-use="'+esc(t.id)+'">Use</button>'+
+        (canDelete?'<button class="btn-red" data-del="'+esc(t.id)+'">✕</button>':'')+
+      '</div>'+
+    '</div>'+
+    '<div class="tcard-exlist">'+
+      t.exercises.slice(0,5).map(function(e){
+        return '<div class="tex-row"><span class="tex-name">'+esc(e.name)+'</span><span class="tex-meta">'+esc(e.sets)+'×'+esc(e.reps)+(e.weight&&e.weight!=='—'?' · '+esc(e.weight):'')+'</span></div>';
+      }).join('')+
+      (t.exercises.length>5?'<div style="font-size:.72rem;color:var(--accent);padding:5px 0">+'+( t.exercises.length-5)+' more…</div>':'')+
+    '</div>'+
+  '</div>';
+}
+
+function bindTplActions(container, canDelete){
+  container.querySelectorAll('[data-use]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var id=btn.dataset.use;
+      var t=getTpls().find(function(x){return x.id===id;})||BUILTIN.find(function(x){return x.id===id;});
+      if(!t) return;
+      var name=prompt('Name for this workout?', t.name);
+      if(!name||!name.trim()) return;
+      var newW={
+        id:uid(), name:name.trim(), tag:t.tag, day:'',
+        exercises:t.exercises.map(function(e){return Object.assign({},e,{id:uid()});})
+      };
+      S.workouts.push(newW);
+      saveState();
+      alert('"'+newW.name+'" added to your workouts! Head back to the main app to see it.');
+    });
+  });
+  if(canDelete){
+    container.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        if(!confirm('Delete this template?')) return;
+        saveTpls(getTpls().filter(function(t){return t.id!==btn.dataset.del;}));
+        renderUserTpls();
+      });
+    });
+  }
+}
+
+// ─── EXERCISE LIBRARY ────────────────────────────────────────
+var activeGroup='all', searchQuery='';
+
+document.querySelectorAll('.fbtn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('on');});
+    btn.classList.add('on');
+    activeGroup=btn.dataset.grp;
+    renderLibrary();
+  });
+});
+
+ge('lib-search').addEventListener('input',function(){
+  searchQuery=this.value.trim().toLowerCase();
+  renderLibrary();
+});
+
+function renderLibrary(){
+  var filtered=EXLIB.filter(function(e){
+    var matchGroup=activeGroup==='all'||e.group===activeGroup;
+    var matchSearch=!searchQuery||e.name.toLowerCase().includes(searchQuery)||e.group.toLowerCase().includes(searchQuery);
+    return matchGroup&&matchSearch;
+  });
+  var list=ge('lib-list');
+  if(!filtered.length){
+    list.innerHTML='<div class="no-data"><span class="no-data-i" style="font-size:1.8rem">🔍</span>No exercises found for that search.</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(function(e){
+    var chipsPri=(e.muscles.primary||[]).map(function(m){return '<span class="mchip primary">'+esc(m.replace(/_/g,' '))+'</span>';}).join('');
+    var chipsSec=(e.muscles.secondary||[]).map(function(m){return '<span class="mchip secondary">'+esc(m.replace(/_/g,' '))+'</span>';}).join('');
+    return '<div class="lib-card">'+
+      '<div class="lib-head" data-toggle="'+esc(e.name)+'">'+
+        '<div class="lib-icon">'+e.icon+'</div>'+
+        '<div class="lib-info">'+
+          '<div class="lib-name">'+esc(e.name)+'</div>'+
+          '<div class="lib-group">'+esc(e.group)+'</div>'+
+        '</div>'+
+        '<div class="lib-chips">'+chipsPri+'</div>'+
+        '<div style="font-size:.8rem;color:var(--muted);margin-left:4px">›</div>'+
+      '</div>'+
+      '<div class="lib-body" id="lb-'+esc(e.name.replace(/\s+/g,'-'))+'">'+
+        '<div class="lib-desc">'+esc(e.desc)+'</div>'+
+        '<div class="lib-tip">💡 '+esc(e.tip)+'</div>'+
+        '<div class="lib-muscles">'+chipsPri+chipsSec+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  list.querySelectorAll('[data-toggle]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var id='lb-'+el.dataset.toggle.replace(/\s+/g,'-');
+      var body=document.getElementById(id);
+      if(body) body.classList.toggle('open');
+    });
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+ge('profile-chip').textContent = profile;
+renderPRs();
+populateWktSelect();
+renderTemplates();
+renderLibrary();
+</script>
+</body>
+</html>

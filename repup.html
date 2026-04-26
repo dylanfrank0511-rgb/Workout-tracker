@@ -7,244 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="RepUp"/>
-  <meta name="theme-color" content="#FF5C28"/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    :root{
-      --bg:#0A0A0F;--card:#111118;--card2:#18181F;--border:#252535;
-      --accent:#FF5C28;--gold:#FFB547;--green:#10B981;--red:#EF4444;--blue:#3B82F6;
-      --text:#F0F0F8;--muted:#7A7A9A;--r:14px;
-    }
-    html,body{height:100%;background:var(--bg);color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-    #app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;max-width:640px;margin:0 auto}
-    button,.wcard,.excheck,.sday,.hhead,.import-cta,.stab,.nbt,.prow,.ex-expand,.ai-daycard{
-      touch-action:manipulation;-webkit-user-select:none;user-select:none}
-
-    /* ── HEADER ── */
-    header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-      padding:13px 18px;padding-top:calc(13px + env(safe-area-inset-top));
-      background:var(--card);border-bottom:1px solid var(--border)}
-    .logo{font-size:1.4rem;font-weight:900;letter-spacing:-.5px;
-      background:linear-gradient(135deg,#FF5C28,#FFB547);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-
-    /* ── MAIN / NAV ── */
-    main{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 15px 8px;-webkit-overflow-scrolling:touch}
-    #bottom-nav{flex-shrink:0;display:flex;background:var(--card);border-top:1px solid var(--border);
-      padding-bottom:calc(6px + env(safe-area-inset-bottom))}
-    .nbt{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 5px;
-      border:none;background:none;color:var(--muted);cursor:pointer;
-      font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;transition:color .15s}
-    .nbt svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    .nbt.on{color:var(--accent)}
-
-    /* ── VIEWS ── */
-    .view{display:none}.view.on{display:block;animation:fadeUp .18s ease}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-    /* ── BUTTONS ── */
-    button{cursor:pointer;border:none;font-family:inherit;transition:opacity .15s,transform .1s}
-    button:active{transform:scale(.96)}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
-      border-radius:10px;font-weight:700;padding:10px 18px;font-size:.875rem}
-    .btn-o{background:linear-gradient(135deg,#FF5C28,#FFB547);color:#fff}
-    .btn-o:hover{opacity:.88}
-    .btn-g{background:var(--card2);color:var(--text);border:1px solid var(--border)}
-    .btn-g:hover{border-color:var(--accent);color:var(--accent)}
-    .btn-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3);border-radius:9px;padding:7px 14px;font-size:.82rem;font-weight:700}
-    .btn-red{background:rgba(239,68,68,.12);color:var(--red);border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:700}
-    .btn-sm{padding:7px 14px;font-size:.8rem;border-radius:9px}
-    .btn-icon{background:none;color:var(--muted);padding:6px;border-radius:8px;font-size:1rem}
-    .btn-icon:hover{background:var(--card2);color:var(--text)}
-    .ibt{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FF5C28,#FFB547);
-      border:none;color:#fff;font-size:.95rem;font-weight:900;cursor:pointer;flex-shrink:0}
-
-    /* ── HELPERS ── */
-    .sec{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
-    .sec-row{display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px}
-    .hidden{display:none!important}
-    .badge{display:inline-block;font-size:.63rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:3px 8px;border-radius:99px}
-    .bp{background:rgba(139,92,246,.18);color:#A78BFA}
-    .bl{background:rgba(236,72,153,.18);color:#F472B6}
-    .bleg{background:rgba(16,185,129,.18);color:#34D399}
-    .bf{background:rgba(251,191,36,.18);color:#FCD34D}
-    .bc{background:rgba(59,130,246,.18);color:#60A5FA}
-    .bo{background:rgba(120,120,140,.18);color:#9CA3AF}
-
-    /* ── WORKOUT CARDS ── */
-    .wgrid{display:grid;gap:11px}
-    .wcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:border-color .15s,transform .12s}
-    .wcard:hover{border-color:rgba(255,92,40,.45);transform:translateY(-1px)}
-    .wcard-bar{height:3px;background:linear-gradient(90deg,#FF5C28,#FFB547)}
-    .wcard-body{padding:13px 15px}
-    .wcard-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
-    .wcard-left{flex:1;min-width:0}
-    .wcard-name{font-size:1rem;font-weight:800;line-height:1.2}
-    .wcard-day{font-size:.72rem;color:var(--accent);font-weight:700;margin-top:2px}
-    .wcard-pills{display:flex;flex-direction:column;gap:2px}
-    .wcard-pill{font-size:.75rem;color:var(--muted)}.wcard-pill::before{content:'· '}
-    .wcard-more{font-size:.72rem;color:var(--accent);font-weight:700;margin-top:2px}
-
-    /* ── SCHEDULE STRIP ── */
-    .sstrip{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
-    .sstrip::-webkit-scrollbar{display:none}
-    .sday{flex:0 0 auto;min-width:58px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center;transition:all .15s}
-    .sday.has{border-color:rgba(255,92,40,.35);background:rgba(255,92,40,.06);cursor:pointer}
-    .sday.today{border-color:var(--accent);background:rgba(255,92,40,.12)}
-    .sday-d{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
-    .sday-n{font-size:1.2rem;font-weight:900;margin:2px 0}
-    .sday.today .sday-n{color:var(--accent)}
-    .sday-w{font-size:.58rem;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px}
-
-    /* ── DETAIL VIEW ── */
-    .dtop{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-    .dbk{width:36px;height:36px;border-radius:10px;background:var(--card2);border:1px solid var(--border);
-      color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .dinfo{flex:1;min-width:0}
-    .dname{font-size:1.15rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .dday-label{font-size:.75rem;color:var(--accent);font-weight:700;margin-top:1px}
-    .dacts{display:flex;gap:5px;flex-shrink:0}
-    .progbar-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);
-      padding:13px 15px;margin-bottom:13px;display:flex;align-items:center;gap:12px}
-    .progbar-outer{flex:1;height:7px;background:var(--card2);border-radius:99px;overflow:hidden}
-    .progbar-fill{height:100%;background:linear-gradient(90deg,#FF5C28,#FFB547);border-radius:99px;transition:width .35s}
-    .progbar-pct{font-size:.8rem;font-weight:900;color:var(--accent);width:34px;text-align:right}
-
-    /* ── EXERCISE CARDS ── */
-    .exlist{display:flex;flex-direction:column;gap:8px}
-    .excard{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .15s}
-    .excard-main{display:flex;align-items:center;gap:11px;padding:12px 13px}
-    .excard.done{opacity:.42}
-    .excard.done .exname{text-decoration:line-through}
-    .excheck{width:27px;height:27px;border-radius:50%;border:2px solid var(--border);background:transparent;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-      font-size:.85rem;color:#fff;transition:all .18s}
-    .excheck.on{background:var(--green);border-color:var(--green)}
-    .exicon{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center}
-    .exbody{flex:1;min-width:0}
-    .exname{font-size:.9rem;font-weight:700}
-    .exmeta{font-size:.73rem;color:var(--muted);margin-top:2px}
-    .exmeta b{color:var(--gold)}
-    .exacts{display:flex;gap:1px;flex-shrink:0}
-    .exinfo-panel{display:none;padding:0 13px 12px 13px;border-top:1px solid var(--border)}
-    .exinfo-panel.open{display:block}
-    .exdesc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:8px}
-    .extip{font-size:.75rem;color:var(--gold);font-style:italic;margin-bottom:8px}
-    .muscle-chips{display:flex;flex-wrap:wrap;gap:5px}
-    .mchip{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:3px 8px;border-radius:99px}
-    .mchip.primary{background:rgba(255,92,40,.2);color:var(--accent)}
-    .mchip.secondary{background:rgba(255,181,71,.15);color:var(--gold)}
-
-    /* Muscle body diagram */
-    .muscle-map{display:flex;gap:12px;align-items:flex-start;margin-top:10px}
-    .muscle-svg-wrap{flex-shrink:0}
-    .muscle-svg-wrap svg .m{fill:#252535;transition:fill .2s}
-    .muscle-svg-wrap svg .m.pri{fill:#FF5C28}
-    .muscle-svg-wrap svg .m.sec{fill:#FFB547}
-    .muscle-svg-wrap svg .m.bg{fill:none;stroke:#252535;stroke-width:1.5}
-    .muscle-legend{flex:1}
-    .mleg-row{font-size:.73rem;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-    .mleg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-
-    /* ── HISTORY ── */
-    .hcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
-    .hhead{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;cursor:pointer}
-    .hhead:hover{background:var(--card2)}
-    .hdate{font-size:.88rem;font-weight:800}
-    .hwname{font-size:.73rem;color:var(--accent);font-weight:700;margin-top:1px}
-    .hmeta{text-align:right;font-size:.7rem;color:var(--muted);line-height:1.5}
-    .hbody{display:none;padding:2px 15px 12px;border-top:1px solid var(--border)}
-    .hbody.open{display:block}
-    .hrow{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);font-size:.8rem}
-    .hrow:last-child{border:none}
-    .hex{flex:1;font-weight:600}.hd{color:var(--muted);white-space:nowrap}.hw{color:var(--accent);font-weight:700}
-
-    /* ── TOOLS ── */
-    .subtabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-    .subtabs::-webkit-scrollbar{display:none}
-    .stab{flex-shrink:0;padding:7px 14px;border-radius:99px;font-size:.78rem;font-weight:700;cursor:pointer;
-      border:1.5px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;font-family:inherit;white-space:nowrap}
-    .stab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-    /* Import Notes CTA */
-    .import-cta{background:linear-gradient(135deg,rgba(255,92,40,.14),rgba(255,181,71,.08));
-      border:1.5px solid rgba(255,92,40,.35);border-radius:var(--r);padding:18px;margin-bottom:14px;
-      text-align:center;cursor:pointer;transition:all .15s}
-    .import-cta:hover{border-color:var(--accent)}
-    .import-cta-icon{font-size:2rem;margin-bottom:6px}
-    .import-cta-title{font-size:1rem;font-weight:900;margin-bottom:3px}
-    .import-cta-sub{font-size:.78rem;color:var(--muted);line-height:1.5}
-    .steps{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:13px}
-    .step{display:flex;align-items:flex-start;gap:9px;padding:5px 0}
-    .step:not(:last-child){border-bottom:1px solid var(--border)}
-    .step-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;
-      font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-    .step-text{font-size:.82rem;line-height:1.5;color:var(--muted)}.step-text b{color:var(--text)}
-
-    /* AI day cards */
-    .ai-daycard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;cursor:default}
-    .ai-dh{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--card2);border-bottom:1px solid var(--border)}
-    .ai-db{padding:8px 14px 12px}
-    .ai-erow{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem}
-    .ai-erow:last-child{border:none}
-    .ai-ename{font-weight:700;flex:1}
-    .ai-em{color:var(--muted);white-space:nowrap;font-size:.75rem}
-
-    /* Exercise Info Cards */
-    .libcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
-    .libcard-head{display:flex;align-items:center;gap:10px;padding:12px 14px}
-    .libcard-icon{font-size:1.6rem;flex-shrink:0}
-    .libcard-info{flex:1;min-width:0}
-    .libcard-name{font-size:.95rem;font-weight:800}
-    .libcard-type{font-size:.7rem;color:var(--muted);margin-top:1px}
-    .libcard-body{padding:0 14px 13px;border-top:1px solid var(--border)}
-    .libcard-desc{font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:10px;margin-bottom:8px}
-    .libcard-tip{font-size:.75rem;color:var(--gold);font-style:italic;margin-bottom:8px}
-    .libcard-map{margin-top:8px}
-
-    /* ── PROFILE ── */
-    .phero{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;text-align:center;margin-bottom:16px}
-    .pav{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FF5C28,#FFB547);
-      display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#fff;margin:0 auto 10px}
-    .pname{font-size:1.15rem;font-weight:900}
-    .pstats{display:flex;justify-content:center;gap:26px;margin-top:13px}
-    .psn{font-size:1.3rem;font-weight:900;color:var(--accent)}.psl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-    .prow{display:flex;align-items:center;gap:11px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;transition:border-color .15s;cursor:default}
-    .prow.active{border-color:var(--accent);background:rgba(255,92,40,.07)}
-    .pav-sm{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#FF5C28,#FFB547);
-      display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:#fff;flex-shrink:0}
-    .pn{flex:1;font-weight:700;font-size:.9rem}
-    .pa-tag{font-size:.62rem;font-weight:800;color:var(--accent);text-transform:uppercase}
-
-    /* ── FORMS / MODALS ── */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(5px);
-      z-index:500;display:flex;align-items:flex-end;justify-content:center}
-    .overlay.hidden{display:none}
-    .sheet{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;
-      width:100%;max-width:560px;padding:20px 20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));
-      max-height:88vh;overflow-y:auto}
-    @media(min-height:600px) and (min-width:480px){.overlay{align-items:center}.sheet{border-radius:20px;max-height:85vh}}
-    .drag{width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px}
-    .sheet h2{font-size:1.1rem;font-weight:900;margin-bottom:14px}
-    .fg{margin-bottom:12px}
-    .fg label{display:block;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:5px}
-    input,select,textarea{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:9px;
-      color:var(--text);padding:10px 12px;font-size:.88rem;outline:none;font-family:inherit;
-      transition:border-color .15s;-webkit-appearance:none;appearance:none}
-    input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-    select option{background:var(--card2)}
-    textarea{resize:vertical;min-height:70px}
-    .frow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
-    .sacts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-
-    /* ── EMPTY ── */
-    .empty{text-align:center;padding:46px 20px;color:var(--muted)}
-    .empty-i{font-size:2.8rem;margin-bottom:10px;opacity:.4}
-    .empty p{margin-bottom:14px;line-height:1.6}
-
-    @media(max-width:380px){.frow{grid-template-columns:1fr 1fr}}
-  </style>
+  <meta name="theme-color" content="#00E5FF"/>
+  <link rel="icon" type="image/svg+xml" href="icon.svg"/>
+  <link rel="apple-touch-icon" href="icon.svg"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <div id="app">
@@ -252,6 +18,9 @@
     <div class="logo">RepUp</div>
     <div style="display:flex;gap:8px;align-items:center">
       <button id="btn-new-workout" class="btn btn-o btn-sm" style="display:none">+ Workout</button>
+      <a href="./progress.html" style="width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;text-decoration:none;flex-shrink:0;transition:border-color .15s" title="Progress">📈</a>
+      <a href="./vault.html" style="width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;text-decoration:none;flex-shrink:0;transition:border-color .15s" title="Vault">🏆</a>
+      <a href="./guide.html" style="width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;text-decoration:none;flex-shrink:0;transition:border-color .15s" title="Exercise Guide">💪</a>
       <button class="ibt" id="btn-avatar">?</button>
     </div>
   </header>
@@ -265,6 +34,13 @@
         <button class="btn btn-g btn-sm" id="btn-edit-sched">Edit Schedule</button>
       </div>
       <div class="sstrip" id="sstrip"></div>
+      <a href="./muscle.html" class="feature-card">
+        <div>
+          <div class="title">Muscle Activation Guide</div>
+          <div class="detail">Scroll through muscle-focused diagrams and lift tips for your most common workouts.</div>
+        </div>
+        <div class="icon">→</div>
+      </a>
       <div class="sec-row"><span class="sec">My Workouts</span></div>
       <div class="wgrid" id="wgrid"></div>
       <div class="empty hidden" id="empty-home">

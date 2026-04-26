@@ -1,12 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#1a1a24"/>
-  <rect x="60" y="230" width="392" height="52" rx="26" fill="#6c63ff"/>
-  <!-- left plate -->
-  <rect x="52" y="180" width="40" height="152" rx="20" fill="#6c63ff"/>
-  <rect x="20" y="206" width="38" height="100" rx="19" fill="#a09aff"/>
-  <!-- right plate -->
-  <rect x="420" y="180" width="40" height="152" rx="20" fill="#6c63ff"/>
-  <rect x="454" y="206" width="38" height="100" rx="19" fill="#a09aff"/>
-  <!-- center grip -->
-  <rect x="188" y="218" width="136" height="76" rx="20" fill="#8b85ff"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="100%" stop-color="#F5FF00"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08101E"/>
+      <stop offset="100%" stop-color="#05070F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="48%" r="42%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#F5FF00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Ambient glow -->
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+
+  <!-- Left outer collar -->
+  <rect x="44" y="212" width="40" height="88" rx="17" fill="url(#grad)" opacity="0.78"/>
+  <!-- Left plate -->
+  <rect x="86" y="176" width="48" height="160" rx="20" fill="url(#grad)"/>
+  <!-- Bar left -->
+  <rect x="136" y="240" width="80" height="32" rx="16" fill="url(#grad)"/>
+
+  <!-- Center knurl grip -->
+  <rect x="216" y="222" width="80" height="68" rx="16" fill="url(#grad)"/>
+  <!-- Knurl texture lines -->
+  <line x1="232" y1="230" x2="232" y2="282" stroke="rgba(0,0,0,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="244" y1="230" x2="244" y2="282" stroke="rgba(0,0,0,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="256" y1="230" x2="256" y2="282" stroke="rgba(0,0,0,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="268" y1="230" x2="268" y2="282" stroke="rgba(0,0,0,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="280" y1="230" x2="280" y2="282" stroke="rgba(0,0,0,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Bar right -->
+  <rect x="296" y="240" width="80" height="32" rx="16" fill="url(#grad)"/>
+  <!-- Right plate -->
+  <rect x="378" y="176" width="48" height="160" rx="20" fill="url(#grad)"/>
+  <!-- Right outer collar -->
+  <rect x="428" y="212" width="40" height="88" rx="17" fill="url(#grad)" opacity="0.78"/>
+
+  <!-- Subtle highlight shine on plates -->
+  <rect x="88" y="180" width="12" height="60" rx="6" fill="white" opacity="0.07"/>
+  <rect x="380" y="180" width="12" height="60" rx="6" fill="white" opacity="0.07"/>
 </svg>

@@ -1,5 +1,5 @@
-const CACHE = 'repup-v4';
-const ASSETS = ['./', './index.html', './repup.html', './manifest.json'];
+const CACHE = 'repup-v12';
+const ASSETS = ['./', './index.html', './repup.html', './progress.html', './vault.html', './exercises.html', './guide.html', './style.css', './ui.css', './icon.svg', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
